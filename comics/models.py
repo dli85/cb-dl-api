@@ -1,0 +1,37 @@
+from django.db import models
+
+
+class Comic(models.Model):
+    title = models.CharField(max_length=255, null=False, blank=False)
+    date_published = models.DateField()
+    link = models.URLField(null=False, blank=False)
+    writers = models.CharField(max_length=255)
+    artists = models.CharField(max_length=255)
+    number_issues = models.IntegerField()
+    last_updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.title
+
+
+class Issue(models.Model):
+    title = models.CharField(max_length=255)
+    link = models.URLField()
+    comic_id = models.ForeignKey(
+        Comic, on_delete=models.CASCADE, related_name="issues"
+    )  # ForeignKey to Comic
+    pages = models.IntegerField()
+
+    def __str__(self):
+        return self.title
+
+
+class Page(models.Model):
+    issue_id = models.ForeignKey(
+        Issue, on_delete=models.CASCADE, related_name="pages_in_issue"
+    )  # Unique related_name
+    title = models.CharField(max_length=255, null=False, blank=False)
+    image_link = models.URLField(null=False, blank=False)
+
+    def __str__(self):
+        return self.title
