@@ -1,16 +1,18 @@
 import re
 
+
 def comic_to_json(comic):
     return {
-            "id": comic.id,
-            "title": comic.title,
-            "date_published": comic.date_published,
-            "link": comic.link,
-            "writers": comic.writers,
-            "artists": comic.artists,
-            "number_issues": comic.number_issues,
-            "last_updated": comic.last_updated,
-        }
+        "id": comic.id,
+        "title": comic.title,
+        "date_published": comic.date_published,
+        "link": comic.link,
+        "writers": comic.writers,
+        "artists": comic.artists,
+        "number_issues": comic.number_issues,
+        "last_updated": comic.last_updated,
+    }
+
 
 # Extracts a year and creates a date
 def create_date(date_string):
@@ -20,6 +22,6 @@ def create_date(date_string):
     else:
         raise ValueError("A four digit date was not found in date string")
 
-if __name__ == '__main__':
-    print(create_date('1111'))
 
+if __name__ == "__main__":
+    print(create_date("1111"))

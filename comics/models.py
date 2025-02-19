@@ -17,9 +17,7 @@ class Comic(models.Model):
 class Issue(models.Model):
     title = models.CharField(max_length=255)
     link = models.URLField(unique=True, null=False, blank=False)
-    comic_id = models.ForeignKey(
-        Comic, on_delete=models.CASCADE, related_name="issues"
-    )
+    comic_id = models.ForeignKey(Comic, on_delete=models.CASCADE, related_name="issues")
     pages = models.IntegerField()
 
     def __str__(self):

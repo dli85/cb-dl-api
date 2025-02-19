@@ -13,42 +13,45 @@ class InfoPageSpider(scrapy.Spider):
         self.start_urls = urls if isinstance(urls, list) else [urls]
 
     def parse(self, response):
-        result = {'link': response.url}
+        result = {"link": response.url}
 
         title = response.css("div.heading h3::text").get()
         if title:
-            result['title'] = title.strip()
+            result["title"] = title.strip()
 
-        paragraphs = response.css('div.col.info p')
+        paragraphs = response.css("div.col.info p")
 
         for i, p in enumerate(paragraphs):
             element_name = None
 
-            paragraph_text = p.xpath('string()').get().strip()
-            if 'writer' in paragraph_text.lower():
-                element_name = 'writers'
-            elif 'artist' in paragraph_text.lower():
-                element_name = 'artists'
-            elif 'date' in paragraph_text.lower():
-                element_name = 'date_published'
+            paragraph_text = p.xpath("string()").get().strip()
+            if "writer" in paragraph_text.lower():
+                element_name = "writers"
+            elif "artist" in paragraph_text.lower():
+                element_name = "artists"
+            elif "date" in paragraph_text.lower():
+                element_name = "date_published"
 
             if not element_name:
                 continue
 
-            if ':' in paragraph_text:
-                paragraph_text = paragraph_text.split(':', 1)[1].strip()
+            if ":" in paragraph_text:
+                paragraph_text = paragraph_text.split(":", 1)[1].strip()
 
             result[element_name] = paragraph_text
 
-        result['issues'] = []
+        result["issues"] = []
 
-        issues = response.css('ul.list li')
+        issues = response.css("ul.list li")
         for issue in issues:
-            issue_title = issue.css('div.col-1 a span::text').get()
-            issue_link = issue.css('div.col-1 a::attr(href)').get()
-            result['issues'].append({'issue_title': issue_title, 'issue_link': issue_link})
+            issue_title = issue.css("div.col-1 a span::text").get()
+            issue_link = issue.css("div.col-1 a::attr(href)").get()
+            result["issues"].append(
+                {"issue_title": issue_title, "issue_link": issue_link}
+            )
 
         yield result
+
 
 def f(q, urls, selected_spider):  # Define f as a global function
     try:
@@ -58,7 +61,7 @@ def f(q, urls, selected_spider):  # Define f as a global function
             results.append(item)
 
         settings = get_project_settings()
-        settings['LOG_LEVEL'] = 'ERROR'
+        settings["LOG_LEVEL"] = "ERROR"
         runner = CrawlerRunner(settings)
         crawler = runner.create_crawler(selected_spider)
         crawler.signals.connect(item_scraped, signal=scrapy.signals.item_scraped)
@@ -68,6 +71,7 @@ def f(q, urls, selected_spider):  # Define f as a global function
         q.put(results)
     except Exception as e:
         q.put(e)
+
 
 def run_spider(urls, selected_spider):
     """
@@ -92,5 +96,6 @@ def run_spider(urls, selected_spider):
     else:
         return result
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     pass

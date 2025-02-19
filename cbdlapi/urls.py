@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.urls import path, include
+
 """
 URL configuration for cbdlapi project.
 
@@ -20,7 +21,7 @@ from django.contrib import admin
 from django.urls import path
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('comics/', include('comics.urls')),
-    path('rcoli/', include('rcoli.urls'))
+    path("admin/", admin.site.urls),
+    path("comics/", include("comics.urls")),
+    path("rcoli/", include("rcoli.urls")),
 ]

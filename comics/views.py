@@ -24,6 +24,7 @@ def get_all_comics(request):
     ]
     return Response({"comics": comic_list})
 
+
 @api_view(["GET"])
 def get_comic(request, comic_id):
     comic = Comic.objects.get(id=comic_id)
@@ -78,7 +79,9 @@ def add_comic(request):
 
 @api_view(["GET"])
 def search_comics(request):
-    title_query = request.GET.get("title", "")  # Get the 'title' parameter from the request URL
+    title_query = request.GET.get(
+        "title", ""
+    )  # Get the 'title' parameter from the request URL
 
     if not title_query:
         return Response({"error": "No title query provided."}, status=400)
@@ -87,12 +90,10 @@ def search_comics(request):
     comics = Comic.objects.filter(title__icontains=title_query)
 
     # Prepare the results to return as JSON
-    comic_list = [
-        comic_to_json(comic)
-        for comic in comics
-    ]
+    comic_list = [comic_to_json(comic) for comic in comics]
 
     return Response({"comics": comic_list})
+
 
 @api_view(["DELETE"])
 def delete_comic(request, comic_id):
