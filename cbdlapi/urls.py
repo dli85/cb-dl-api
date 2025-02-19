@@ -22,4 +22,5 @@ from django.urls import path
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('comics/', include('comics.urls')),
+    path('rcoli/', include('rcoli.urls'))
 ]

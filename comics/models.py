@@ -4,7 +4,7 @@ from django.db import models
 class Comic(models.Model):
     title = models.CharField(max_length=255, null=False, blank=False)
     date_published = models.DateField()
-    link = models.URLField(null=False, blank=False)
+    link = models.URLField(unique=True, null=False, blank=False)
     writers = models.CharField(max_length=255)
     artists = models.CharField(max_length=255)
     number_issues = models.IntegerField()
@@ -16,10 +16,10 @@ class Comic(models.Model):
 
 class Issue(models.Model):
     title = models.CharField(max_length=255)
-    link = models.URLField()
+    link = models.URLField(unique=True, null=False, blank=False)
     comic_id = models.ForeignKey(
         Comic, on_delete=models.CASCADE, related_name="issues"
-    )  # ForeignKey to Comic
+    )
     pages = models.IntegerField()
 
     def __str__(self):
@@ -30,8 +30,9 @@ class Page(models.Model):
     issue_id = models.ForeignKey(
         Issue, on_delete=models.CASCADE, related_name="pages_in_issue"
     )  # Unique related_name
+    page_number = models.IntegerField()
     title = models.CharField(max_length=255, null=False, blank=False)
-    image_link = models.URLField(null=False, blank=False)
+    image_link = models.URLField(unique=True, null=False, blank=False)
 
     def __str__(self):
         return self.title
