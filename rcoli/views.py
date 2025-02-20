@@ -100,8 +100,8 @@ def add_pages(request):
 
     for success in successes:
 
-        issue_id = success['issue_id']
-        pages = success['pages']
+        issue_id = success["issue_id"]
+        pages = success["pages"]
         num_pages = len(pages)
 
         issue = Issue.objects.get(id=issue_id)
@@ -115,15 +115,15 @@ def add_pages(request):
             Page.objects.filter(issue_id=issue_id).delete()
 
             for page in pages:
-                page_number = page['page']
-                image_link = page['link']
+                page_number = page["page"]
+                image_link = page["link"]
                 title = issue.title
 
                 Page.objects.create(
                     issue_id=issue,
                     page_number=page_number,
                     title=title,
-                    image_link=image_link
+                    image_link=image_link,
                 )
         except Exception as e:
             print(e)

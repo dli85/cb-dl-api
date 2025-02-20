@@ -41,13 +41,11 @@ def get_issues_for_comic(request, comic_id):
     issues = Issue.objects.filter(comic_id=comic)
 
     # Prepare the list of issues
-    issue_list = [
-        issue_to_json(issue)
-        for issue in issues
-    ]
+    issue_list = [issue_to_json(issue) for issue in issues]
 
     # Return the list of issues for the comic
     return Response({"issues": issue_list})
+
 
 @api_view(["GET"])
 def get_pages_by_issue(request, issue_id):
@@ -58,10 +56,7 @@ def get_pages_by_issue(request, issue_id):
     pages = Page.objects.filter(issue_id=issue)
 
     # Prepare the list of pages
-    page_list = [
-        page_to_json(page)
-        for page in pages
-    ]
+    page_list = [page_to_json(page) for page in pages]
 
     # Return the list of pages for the issue
     return Response({"pages": page_list})

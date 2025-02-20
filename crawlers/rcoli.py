@@ -14,6 +14,7 @@ import os
 
 load_dotenv()
 
+
 class InfoPageSpider(scrapy.Spider):
     name = "InfoPageSpider"
 
@@ -109,7 +110,7 @@ def run_spider(urls, selected_spider):
 def crawl_issues(issues):
     print(issues)
     chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument('--incognito')
+    chrome_options.add_argument("--incognito")
     # chrome_options.add_argument('--start-minimized')
 
     service = Service(os.getenv("CHROME_DRIVER_PATH"))
@@ -120,16 +121,19 @@ def crawl_issues(issues):
     failures = []
 
     for issue in issues:
-        result = selenium_crawl(browser, issue['link'])
+        result = selenium_crawl(browser, issue["link"])
 
         if "error" in result:
-            failures.append({"issue_id": issue['issue_id'], "link": issue['link']})
+            failures.append({"issue_id": issue["issue_id"], "link": issue["link"]})
         else:
-            successes.append({"issue_id": issue['issue_id'], "pages": result, "link": issue['link']})
+            successes.append(
+                {"issue_id": issue["issue_id"], "pages": result, "link": issue["link"]}
+            )
 
     browser.quit()
 
     return successes, failures
+
 
 def selenium_crawl(browser, url, image_load_threshold=60):
     start_time = time.time()
@@ -140,7 +144,9 @@ def selenium_crawl(browser, url, image_load_threshold=60):
             browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
             time.sleep(0.5)  # Wait for new content to load
 
-            images = browser.find_elements("xpath", '//img[@rel="noreferrer" and contains(@src, "blank.gif")]')
+            images = browser.find_elements(
+                "xpath", '//img[@rel="noreferrer" and contains(@src, "blank.gif")]'
+            )
 
             if not images or (time.time() - start_time >= image_load_threshold):
                 break
@@ -156,12 +162,13 @@ def selenium_crawl(browser, url, image_load_threshold=60):
     result = []
     for index, img in enumerate(images):
         src = img.get("src")
-        if not src or 'blank.gif' in src:
-            return {"error": 'Was not able to find src for: ' + url }
+        if not src or "blank.gif" in src:
+            return {"error": "Was not able to find src for: " + url}
         if src:
             result.append({"page": int(index + 1), "link": src})
 
     return result
+
 
 if __name__ == "__main__":
     pass

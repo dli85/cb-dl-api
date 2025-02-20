@@ -13,22 +13,23 @@ def comic_to_json(comic):
         "last_updated": comic.last_updated,
     }
 
+
 def issue_to_json(issue):
     return {
-            "id": issue.id,
-            "title": issue.title,
-            "link": issue.link,
-            "comic_id": issue.comic_id.id,
-            "pages": issue.pages
-        }
+        "id": issue.id,
+        "title": issue.title,
+        "link": issue.link,
+        "comic_id": issue.comic_id.id,
+        "pages": issue.pages,
+    }
 
 
 def page_to_json(page):
     return {
-            "page_number": page.page_number,
-            "title": page.title,
-            "image_link": page.image_link,
-        }
+        "page_number": page.page_number,
+        "title": page.title,
+        "image_link": page.image_link,
+    }
 
 
 # Extracts a year and creates a date
