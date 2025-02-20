@@ -127,6 +127,7 @@ def process_add_pages_for_issues(issue_requests):
 
     return successes, failures
 
+
 @api_view(["POST"])
 def add_pages(request):
     data = request.data
@@ -146,6 +147,7 @@ def add_pages(request):
             ],
         }
     )
+
 
 @api_view(["POST"])
 def add_pages_missing_issues(request):

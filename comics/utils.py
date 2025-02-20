@@ -31,14 +31,15 @@ def page_to_json(page):
         "image_link": page.image_link,
     }
 
+
 def download_job_to_json(job):
     return {
-            "id": job.id,
-            "downloaded_pages": job.downloaded_pages,
-            "total_pages": job.total_pages,
-            "total_issues": job.total_issues,
-            "complete": job.complete,
-        }
+        "id": job.id,
+        "downloaded_pages": job.downloaded_pages,
+        "total_pages": job.total_pages,
+        "total_issues": job.total_issues,
+        "complete": job.complete,
+    }
 
 
 # Extracts a year and creates a date

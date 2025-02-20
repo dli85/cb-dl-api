@@ -110,9 +110,7 @@ def add_comic(request):
 
 @api_view(["GET"])
 def search_comics(request):
-    title_query = request.GET.get(
-        "title", ""
-    )
+    title_query = request.GET.get("title", "")
 
     if not title_query:
         return Response({"error": "No title query provided."}, status=400)
@@ -183,11 +181,11 @@ def update_comic(request, comic_id):
     except Exception as e:
         return Response({"error": str(e)}, status=500)
 
+
 @api_view(["POST"])
 def create_and_start_download(request):
     data = request.data
-    issue_ids = data['issue_ids']
-
+    issue_ids = data["issue_ids"]
 
     steps = []
 
@@ -223,13 +221,12 @@ def create_and_start_download(request):
                 image_link=page.image_link,
                 page_number=page.page_number,
                 issue_index_number=issue_index,
-                complete=False
+                complete=False,
             )
 
             total_pages += 1
 
             steps.append(download_job_step)
-
 
         issue_index += 1
 
@@ -245,17 +242,13 @@ def get_all_download_jobs(request):
     incomplete_jobs = DownloadJob.objects.filter(complete=False)
     complete_jobs = DownloadJob.objects.filter(complete=True)
 
-    incomplete_job_list = [
-        download_job_to_json(job)
-        for job in incomplete_jobs
-    ]
+    incomplete_job_list = [download_job_to_json(job) for job in incomplete_jobs]
 
-    complete_job_list = [
-        download_job_to_json(job)
-        for job in complete_jobs
-    ]
+    complete_job_list = [download_job_to_json(job) for job in complete_jobs]
 
-    return Response({"incomplete": incomplete_job_list, "complete": complete_job_list}, status=200)
+    return Response(
+        {"incomplete": incomplete_job_list, "complete": complete_job_list}, status=200
+    )
 
 
 @api_view(["DELETE"])
@@ -285,7 +278,9 @@ def delete_completed_download_jobs(request):
 
         completed_jobs.delete()
 
-        return Response({"message": "All completed download jobs deleted successfully."}, status=200)
+        return Response(
+            {"message": "All completed download jobs deleted successfully."}, status=200
+        )
 
     except Exception as e:
         return Response({"error": str(e)}, status=500)

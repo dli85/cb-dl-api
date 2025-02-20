@@ -14,5 +14,5 @@ urlpatterns = [
     path("create_and_start_download", views.create_and_start_download),
     path("get_all_download_jobs", views.get_all_download_jobs),
     path("delete_download_job/<int:job_id>", views.delete_download_job),
-    path("delete_completed_download_jobs", views.delete_completed_download_jobs)
+    path("delete_completed_download_jobs", views.delete_completed_download_jobs),
 ]
