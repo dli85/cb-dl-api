@@ -78,11 +78,7 @@ def add_comics_and_issues(request):
     return Response(result)
 
 
-@api_view(["POST"])
-def add_pages(request):
-    data = request.data
-    issue_requests = data["issue_requests"]
-
+def process_add_pages_for_issues(issue_requests):
     workload = []
     for issue_request in issue_requests:
         issue_id = issue_request["id"]
@@ -128,6 +124,44 @@ def add_pages(request):
         except Exception as e:
             print(e)
             failures.append({"issue_id": success["issue_id"], "link": success["link"]})
+
+    return successes, failures
+
+@api_view(["POST"])
+def add_pages(request):
+    data = request.data
+    issue_requests = data["issue_requests"]
+
+    successes, failures = process_add_pages_for_issues(issue_requests)
+
+    return Response(
+        {
+            "successes": [
+                {"issue_id": cur_issue["issue_id"], "link": cur_issue["link"]}
+                for cur_issue in successes
+            ],
+            "failures": [
+                {"issue_id": cur_issue["issue_id"], "link": cur_issue["link"]}
+                for cur_issue in failures
+            ],
+        }
+    )
+
+@api_view(["POST"])
+def add_pages_missing_issues(request):
+    """
+    Add pages for all issues whose pages haven't been added (check by pagecount = 0)
+    """
+    data = request.data
+    issue_requests = data["issue_requests"]
+
+    missing_issues = [
+        issue_request
+        for issue_request in issue_requests
+        if Issue.objects.filter(id=issue_request["id"], pages=0).exists()
+    ]
+
+    successes, failures = process_add_pages_for_issues(missing_issues)
 
     return Response(
         {

@@ -34,3 +34,28 @@ class Page(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class DownloadJob(models.Model):
+    # downloadjob id used as folder name
+    downloaded_pages = models.IntegerField()
+    total_pages = models.IntegerField()
+    total_issues = models.IntegerField()
+    complete = models.BooleanField()
+
+
+class DownloadJobStep(models.Model):
+    download_job = models.ForeignKey(
+        DownloadJob, on_delete=models.CASCADE, related_name="download_job_steps"
+    )
+    page = models.ForeignKey(
+        Page, on_delete=models.CASCADE, related_name="download_job_steps"
+    )
+    image_link = models.URLField(unique=True, max_length=500, null=False, blank=False)
+    page_number = models.IntegerField()
+    # issue_index_number used as issue folder name
+    issue_index_number = models.IntegerField()
+    complete = models.BooleanField()
+
+
+

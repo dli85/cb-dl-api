@@ -2,7 +2,7 @@ from django.http import JsonResponse
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from .utils import *
-from .models import Comic, Issue, Page
+from .models import Comic, Issue, Page, DownloadJob, DownloadJobStep
 from django.shortcuts import get_object_or_404
 import json
 
@@ -112,7 +112,7 @@ def add_comic(request):
 def search_comics(request):
     title_query = request.GET.get(
         "title", ""
-    )  # Get the 'title' parameter from the request URL
+    )
 
     if not title_query:
         return Response({"error": "No title query provided."}, status=400)
@@ -179,6 +179,113 @@ def update_comic(request, comic_id):
 
     except Comic.DoesNotExist:
         return Response({"error": "Comic not found."}, status=404)
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
+@api_view(["POST"])
+def create_and_start_download(request):
+    data = request.data
+    issue_ids = data['issue_ids']
+
+
+    steps = []
+
+    downloaded_pages = 0
+    total_pages = 0
+    total_issues = 0
+    complete = False
+    try:
+        download_job = DownloadJob.objects.create(
+            downloaded_pages=downloaded_pages,
+            total_pages=total_pages,
+            total_issues=total_issues,
+            complete=complete,
+        )
+    except Exception as e:
+        # If there was an error with the request, send an error response
+        return Response({"error failed to create download job": str(e)}, status=500)
+
+    issue_index = 0
+
+    total_pages = 0
+
+    for issue_id in issue_ids:
+        issue = Issue.objects.get(id=issue_id)
+
+        pages = Page.objects.filter(issue_id=issue)
+
+        for page in pages:
+
+            download_job_step = DownloadJobStep.objects.create(
+                download_job=download_job,
+                page=page,
+                image_link=page.image_link,
+                page_number=page.page_number,
+                issue_index_number=issue_index,
+                complete=False
+            )
+
+            total_pages += 1
+
+            steps.append(download_job_step)
+
+
+        issue_index += 1
+
+    download_job.total_pages = total_pages
+    download_job.total_issues = issue_index + 1
+    download_job.save()
+
+    return Response(download_job_to_json(download_job), status=200)
+
+
+@api_view(["GET"])
+def get_all_download_jobs(request):
+    incomplete_jobs = DownloadJob.objects.filter(complete=False)
+    complete_jobs = DownloadJob.objects.filter(complete=True)
+
+    incomplete_job_list = [
+        download_job_to_json(job)
+        for job in incomplete_jobs
+    ]
+
+    complete_job_list = [
+        download_job_to_json(job)
+        for job in complete_jobs
+    ]
+
+    return Response({"incomplete": incomplete_job_list, "complete": complete_job_list}, status=200)
+
+
+@api_view(["DELETE"])
+def delete_download_job(request, job_id):
+    try:
+        download_job = get_object_or_404(DownloadJob, id=job_id)
+
+        DownloadJobStep.objects.filter(download_job=download_job).delete()
+
+        download_job.delete()
+
+        return Response(download_job_to_json(download_job), status=200)
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
+
+@api_view(["DELETE"])
+def delete_completed_download_jobs(request):
+    try:
+        completed_jobs = DownloadJob.objects.filter(complete=True)
+
+        if not completed_jobs.exists():
+            return Response({"message": "No completed jobs."}, status=200)
+
+        DownloadJobStep.objects.filter(download_job__in=completed_jobs).delete()
+
+        completed_jobs.delete()
+
+        return Response({"message": "All completed download jobs deleted successfully."}, status=200)
 
     except Exception as e:
         return Response({"error": str(e)}, status=500)

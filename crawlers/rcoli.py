@@ -135,7 +135,7 @@ def crawl_issues(issues):
     return successes, failures
 
 
-def selenium_crawl(browser, url, image_load_threshold=60):
+def selenium_crawl(browser, url, image_load_threshold=120):
     start_time = time.time()
 
     def scroll_until_images_load(browser):
