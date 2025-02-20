@@ -2,7 +2,8 @@ from django.http import JsonResponse
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from .utils import *
-from .models import Comic
+from .models import Comic, Issue, Page
+from django.shortcuts import get_object_or_404
 import json
 
 
@@ -29,6 +30,41 @@ def get_all_comics(request):
 def get_comic(request, comic_id):
     comic = Comic.objects.get(id=comic_id)
     return Response(comic_to_json(comic))
+
+
+@api_view(["GET"])
+def get_issues_for_comic(request, comic_id):
+    # Retrieve the comic by its ID
+    comic = get_object_or_404(Comic, id=comic_id)
+
+    # Retrieve all issues related to the comic
+    issues = Issue.objects.filter(comic_id=comic)
+
+    # Prepare the list of issues
+    issue_list = [
+        issue_to_json(issue)
+        for issue in issues
+    ]
+
+    # Return the list of issues for the comic
+    return Response({"issues": issue_list})
+
+@api_view(["GET"])
+def get_pages_by_issue(request, issue_id):
+    # Retrieve the issue by its ID
+    issue = get_object_or_404(Issue, id=issue_id)
+
+    # Retrieve all pages related to the issue
+    pages = Page.objects.filter(issue_id=issue)
+
+    # Prepare the list of pages
+    page_list = [
+        page_to_json(page)
+        for page in pages
+    ]
+
+    # Return the list of pages for the issue
+    return Response({"pages": page_list})
 
 
 @api_view(["POST"])

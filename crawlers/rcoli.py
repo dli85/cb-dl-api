@@ -3,7 +3,16 @@ from scrapy.crawler import CrawlerRunner
 from scrapy.utils.project import get_project_settings
 from multiprocessing import Process, Queue
 from twisted.internet import reactor
+from bs4 import BeautifulSoup
 
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+import time
+
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 class InfoPageSpider(scrapy.Spider):
     name = "InfoPageSpider"
@@ -96,6 +105,63 @@ def run_spider(urls, selected_spider):
     else:
         return result
 
+
+def crawl_issues(issues):
+    print(issues)
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.add_argument('--incognito')
+    # chrome_options.add_argument('--start-minimized')
+
+    service = Service(os.getenv("CHROME_DRIVER_PATH"))
+    browser = webdriver.Chrome(service=service, options=chrome_options)
+    # browser.minimize_window()
+
+    successes = []
+    failures = []
+
+    for issue in issues:
+        result = selenium_crawl(browser, issue['link'])
+
+        if "error" in result:
+            failures.append({"issue_id": issue['issue_id'], "link": issue['link']})
+        else:
+            successes.append({"issue_id": issue['issue_id'], "pages": result, "link": issue['link']})
+
+    browser.quit()
+
+    return successes, failures
+
+def selenium_crawl(browser, url, image_load_threshold=60):
+    start_time = time.time()
+
+    def scroll_until_images_load(browser):
+        while True:
+            # Scroll to the bottom
+            browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            time.sleep(0.5)  # Wait for new content to load
+
+            images = browser.find_elements("xpath", '//img[@rel="noreferrer" and contains(@src, "blank.gif")]')
+
+            if not images or (time.time() - start_time >= image_load_threshold):
+                break
+
+    browser.get(url)
+    scroll_until_images_load(browser)
+
+    # Parse page source with BeautifulSoup
+    soup = BeautifulSoup(browser.page_source, "html.parser")
+    images = soup.find_all("img", attrs={"rel": "noreferrer"})
+
+    # Extract img src attributes in order and track index
+    result = []
+    for index, img in enumerate(images):
+        src = img.get("src")
+        if not src or 'blank.gif' in src:
+            return {"error": 'Was not able to find src for: ' + url }
+        if src:
+            result.append({"page": int(index + 1), "link": src})
+
+    return result
 
 if __name__ == "__main__":
     pass

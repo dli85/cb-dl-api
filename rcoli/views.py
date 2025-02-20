@@ -2,8 +2,9 @@ from django.http import JsonResponse
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from comics.utils import *
-from comics.models import Comic, Issue
-from crawlers.rcoli import run_spider, InfoPageSpider
+from comics.models import Comic, Issue, Page
+from crawlers.rcoli import run_spider, InfoPageSpider, crawl_issues
+from django.shortcuts import get_object_or_404
 
 from dotenv import load_dotenv
 import os
@@ -75,3 +76,68 @@ def add_comics_and_issues(request):
         result.append(comic_to_json(created_comic))
 
     return Response(result)
+
+
+@api_view(["POST"])
+def add_pages(request):
+    data = request.data
+    issue_requests = data["issue_requests"]
+
+    workload = []
+    for issue_request in issue_requests:
+        issue_id = issue_request["id"]
+        high_quality = issue_request["high_quality"]
+        issue = get_object_or_404(Issue, id=issue_id)
+        link = issue.link + "&s=&readType=1"
+        if high_quality:
+            link = link + "&s=&quality=hq"
+        else:
+            link = link + "&s=&quality=lq"
+
+        workload.append({"issue_id": issue.id, "link": link})
+
+    successes, failures = crawl_issues(workload)
+
+    for success in successes:
+
+        issue_id = success['issue_id']
+        pages = success['pages']
+        num_pages = len(pages)
+
+        issue = Issue.objects.get(id=issue_id)
+
+        # update number of pages
+        issue.pages = num_pages
+        try:
+            issue.save()
+
+            # delete all existing pages with the issue id
+            Page.objects.filter(issue_id=issue_id).delete()
+
+            for page in pages:
+                page_number = page['page']
+                image_link = page['link']
+                title = issue.title
+
+                Page.objects.create(
+                    issue_id=issue,
+                    page_number=page_number,
+                    title=title,
+                    image_link=image_link
+                )
+        except Exception as e:
+            print(e)
+            failures.append({"issue_id": success["issue_id"], "link": success["link"]})
+
+    return Response(
+        {
+            "successes": [
+                {"issue_id": cur_issue["issue_id"], "link": cur_issue["link"]}
+                for cur_issue in successes
+            ],
+            "failures": [
+                {"issue_id": cur_issue["issue_id"], "link": cur_issue["link"]}
+                for cur_issue in failures
+            ],
+        }
+    )

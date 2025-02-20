@@ -30,7 +30,7 @@ class Page(models.Model):
     )  # Unique related_name
     page_number = models.IntegerField()
     title = models.CharField(max_length=255, null=False, blank=False)
-    image_link = models.URLField(unique=True, null=False, blank=False)
+    image_link = models.URLField(unique=True, max_length=500, null=False, blank=False)
 
     def __str__(self):
         return self.title
