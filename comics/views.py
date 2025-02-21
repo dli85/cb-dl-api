@@ -1,11 +1,10 @@
-from django.http import JsonResponse
+from typing import List
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from .utils import *
 from .models import Comic, Issue, Page, DownloadJob, DownloadJobStep
 from django.shortcuts import get_object_or_404
-import json
-
+from .downloader import download_images, create_folders, recursive_remove_folder, combine
 
 @api_view(["GET"])
 def get_all_comics(request):
@@ -187,7 +186,7 @@ def create_and_start_download(request):
     data = request.data
     issue_ids = data["issue_ids"]
 
-    steps = []
+    steps: List[DownloadJobStep] = []
 
     downloaded_pages = 0
     total_pages = 0
@@ -231,10 +230,38 @@ def create_and_start_download(request):
         issue_index += 1
 
     download_job.total_pages = total_pages
-    download_job.total_issues = issue_index + 1
+    download_job.total_issues = issue_index
     download_job.save()
 
+    create_folders(download_job)
+    download_images(download_job, steps)
+
+    # Update the job if no more things to download.
+    incomplete_steps = DownloadJobStep.objects.filter(download_job_id=download_job.id, complete=False)
+    if not incomplete_steps:
+        download_job.complete = True
+        download_job.save()
+
     return Response(download_job_to_json(download_job), status=200)
+
+
+@api_view(["POST"])
+def retry_download_job(request, job_id):
+    download_job = DownloadJob.objects.get(id=job_id)
+    incomplete_steps = DownloadJobStep.objects.filter(download_job_id=job_id, complete=False)
+
+    create_folders(download_job)
+    download_images(download_job, incomplete_steps)
+
+    # Update the job if no more things to download.
+    incomplete_steps = DownloadJobStep.objects.filter(download_job_id=download_job.id, complete=False)
+    if not incomplete_steps:
+        download_job.complete = True
+        download_job.save()
+
+    combine(download_job)
+
+    return Response({"message": "ok"}, status=200)
 
 
 @api_view(["GET"])
@@ -257,7 +284,7 @@ def delete_download_job(request, job_id):
         download_job = get_object_or_404(DownloadJob, id=job_id)
 
         DownloadJobStep.objects.filter(download_job=download_job).delete()
-
+        recursive_remove_folder(download_job)
         download_job.delete()
 
         return Response(download_job_to_json(download_job), status=200)
@@ -275,6 +302,9 @@ def delete_completed_download_jobs(request):
             return Response({"message": "No completed jobs."}, status=200)
 
         DownloadJobStep.objects.filter(download_job__in=completed_jobs).delete()
+
+        for download_job in completed_jobs:
+            recursive_remove_folder(download_job)
 
         completed_jobs.delete()
 

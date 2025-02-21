@@ -3,3 +3,5 @@ psycopg2
 black
 dot-env
 scrapy
+requests
+img2pdf
