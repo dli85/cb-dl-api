@@ -10,7 +10,7 @@ import os
 
 load_dotenv()
 
-DOWNLOAD_BASE_FOLDER = os.getenv('DOWNLOAD_FOLDER')
+DOWNLOAD_BASE_FOLDER = os.getenv("DOWNLOAD_FOLDER")
 
 
 def create_folders(job: DownloadJob):
@@ -86,7 +86,9 @@ def combine(job: DownloadJob):
 
         if os.path.isdir(sub_dir_path):  # Ensure it's a directory
             # Sort images numerically and add to the list
-            images = sorted(os.listdir(sub_dir_path), key=lambda x: int(os.path.splitext(x)[0]))
+            images = sorted(
+                os.listdir(sub_dir_path), key=lambda x: int(os.path.splitext(x)[0])
+            )
             image_paths.extend(os.path.join(sub_dir_path, img) for img in images)
 
     if not image_paths:

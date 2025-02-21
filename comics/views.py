@@ -4,7 +4,13 @@ from rest_framework.decorators import api_view
 from .utils import *
 from .models import Comic, Issue, Page, DownloadJob, DownloadJobStep
 from django.shortcuts import get_object_or_404
-from .downloader import download_images, create_folders, recursive_remove_folder, combine
+from .downloader import (
+    download_images,
+    create_folders,
+    recursive_remove_folder,
+    combine,
+)
+
 
 @api_view(["GET"])
 def get_all_comics(request):
@@ -237,7 +243,9 @@ def create_and_start_download(request):
     download_images(download_job, steps)
 
     # Update the job if no more things to download.
-    incomplete_steps = DownloadJobStep.objects.filter(download_job_id=download_job.id, complete=False)
+    incomplete_steps = DownloadJobStep.objects.filter(
+        download_job_id=download_job.id, complete=False
+    )
     if not incomplete_steps:
         download_job.complete = True
         download_job.save()
@@ -248,13 +256,17 @@ def create_and_start_download(request):
 @api_view(["POST"])
 def retry_download_job(request, job_id):
     download_job = DownloadJob.objects.get(id=job_id)
-    incomplete_steps = DownloadJobStep.objects.filter(download_job_id=job_id, complete=False)
+    incomplete_steps = DownloadJobStep.objects.filter(
+        download_job_id=job_id, complete=False
+    )
 
     create_folders(download_job)
     download_images(download_job, incomplete_steps)
 
     # Update the job if no more things to download.
-    incomplete_steps = DownloadJobStep.objects.filter(download_job_id=download_job.id, complete=False)
+    incomplete_steps = DownloadJobStep.objects.filter(
+        download_job_id=download_job.id, complete=False
+    )
     if not incomplete_steps:
         download_job.complete = True
         download_job.save()
