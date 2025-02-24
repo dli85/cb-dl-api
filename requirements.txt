@@ -5,3 +5,4 @@ dot-env
 scrapy
 requests
 img2pdf
+django-cors-headers

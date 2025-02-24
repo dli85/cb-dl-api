@@ -47,9 +47,26 @@ def get_issues_for_comic(request, comic_id):
 
     # Prepare the list of issues
     issue_list = [issue_to_json(issue) for issue in issues]
+    # issue_list = sorted(issue_list, key=lambda c: c['title'])
 
     # Return the list of issues for the comic
-    return Response({"issues": issue_list})
+    return Response(issue_list)
+
+@api_view(["GET"])
+def get_issues_by_link(request):
+    url = request.GET.get('url')
+    # Retrieve the comic by its ID
+    comic = get_object_or_404(Comic, link=url)
+
+    # Retrieve all issues related to the comic
+    issues = Issue.objects.filter(comic_id=comic)
+
+    # Prepare the list of issues
+    issue_list = [issue_to_json(issue) for issue in issues]
+    # issue_list = sorted(issue_list, key=lambda c: c['title'])
+
+    # Return the list of issues for the comic
+    return Response(issue_list)
 
 
 @api_view(["GET"])
@@ -126,7 +143,9 @@ def search_comics(request):
     # Prepare the results to return as JSON
     comic_list = [comic_to_json(comic) for comic in comics]
 
-    return Response({"comics": comic_list})
+    comic_list = sorted(comic_list, key=lambda c: c['title'])
+
+    return Response(comic_list)
 
 
 @api_view(["DELETE"])

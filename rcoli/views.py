@@ -21,7 +21,7 @@ def add_comics_and_issues(request):
         comics = run_spider(urls, InfoPageSpider)
     except Exception as e:
         # If there was an error with the request, send an error response
-        return Response({"crawler error": str(e)}, status=500)
+        return Response({"error": str(e)}, status=500)
 
     result = []
 
@@ -48,14 +48,7 @@ def add_comics_and_issues(request):
                 number_issues=number_issues,
             )
         except Exception as e:
-            result.append(
-                {
-                    "error": "An issue was encountered while adding a comic to db: "
-                    + str(e),
-                    "link": link,
-                }
-            )
-            continue
+            return Response({"error": str(e)}, status=403)
 
         print("comic created")
 
@@ -74,6 +67,80 @@ def add_comics_and_issues(request):
             )
 
         result.append(comic_to_json(created_comic))
+
+    return Response(result)
+
+
+@api_view(["PATCH"])
+def add_or_update_comics_and_issues(request):
+    data = request.data
+    urls = data['urls']
+
+    try:
+        comics = run_spider(urls, InfoPageSpider)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
+    result = []
+
+    for comic in comics:
+        try:
+            title = comic["title"]
+            link = comic["link"]
+            writers = comic.get("writers", "")
+            artists = comic.get("artists", "")
+            date_published = comic.get("date_published", "")
+            issues = comic.get("issues", [])
+            number_issues = len(issues)
+
+            if not title or not link:
+                return Response({"error": "Missing required fields."}, status=400)
+
+            # Check if the comic already exists
+            existing_comic = Comic.objects.filter(link=link).first()
+
+            if existing_comic:
+                # Update the existing comic
+                existing_comic.title = title
+                existing_comic.writers = writers
+                existing_comic.artists = artists
+                existing_comic.date_published = create_date(date_published)
+                existing_comic.number_issues = number_issues
+                existing_comic.save()
+            else:
+                # Create a new comic
+                existing_comic = Comic.objects.create(
+                    title=title,
+                    link=link,
+                    date_published=create_date(date_published),
+                    writers=writers,
+                    artists=artists,
+                    number_issues=number_issues,
+                )
+
+            for issue in issues:
+                issue_title = issue["issue_title"]
+                issue_link = os.getenv("RCOLI_BASE_LINK") + issue["issue_link"]
+                pages = 0
+
+                if not issue_title or not issue_link:
+                    return Response({"error": "Issue is missing required fields."}, status=400)
+
+                # Check if the issue already exists
+                existing_issue = Issue.objects.filter(link=issue_link, comic_id=existing_comic).first()
+
+                if existing_issue:
+                    existing_issue.title = issue_title
+                    existing_issue.pages = pages
+                    existing_issue.save()
+                else:
+                    Issue.objects.create(
+                        title=issue_title, link=issue_link, comic_id=existing_comic, pages=pages
+                    )
+
+            result.append(comic_to_json(existing_comic))
+        except Exception as e:
+            return Response({"error": str(e)}, status=403)
 
     return Response(result)
 
