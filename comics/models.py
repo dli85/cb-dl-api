@@ -42,7 +42,7 @@ class DownloadJob(models.Model):
     total_pages = models.IntegerField()
     total_issues = models.IntegerField()
     complete = models.BooleanField()
-
+    name = models.CharField(max_length=255, null=False, blank=False)
 
 class DownloadJobStep(models.Model):
     download_job = models.ForeignKey(
@@ -51,7 +51,7 @@ class DownloadJobStep(models.Model):
     page = models.ForeignKey(
         Page, on_delete=models.CASCADE, related_name="download_job_steps"
     )
-    image_link = models.URLField(unique=True, max_length=500, null=False, blank=False)
+    image_link = models.URLField(max_length=500, null=False, blank=False)
     page_number = models.IntegerField()
     # issue_index_number used as issue folder name
     issue_index_number = models.IntegerField()

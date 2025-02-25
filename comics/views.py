@@ -11,7 +11,6 @@ from .downloader import (
     combine,
 )
 
-
 @api_view(["GET"])
 def get_all_comics(request):
     comics = Comic.objects.all()  # Retrieve all comics
@@ -34,6 +33,12 @@ def get_all_comics(request):
 @api_view(["GET"])
 def get_comic(request, comic_id):
     comic = Comic.objects.get(id=comic_id)
+    return Response(comic_to_json(comic))
+
+@api_view(["GET"])
+def get_comic_by_link(request):
+    url = request.GET.get('url')
+    comic = get_object_or_404(Comic, link=url)
     return Response(comic_to_json(comic))
 
 
@@ -210,6 +215,7 @@ def update_comic(request, comic_id):
 def create_and_start_download(request):
     data = request.data
     issue_ids = data["issue_ids"]
+    name = data['name']
 
     steps: List[DownloadJobStep] = []
 
@@ -223,6 +229,7 @@ def create_and_start_download(request):
             total_pages=total_pages,
             total_issues=total_issues,
             complete=complete,
+            name=name
         )
     except Exception as e:
         # If there was an error with the request, send an error response
@@ -268,8 +275,11 @@ def create_and_start_download(request):
     if not incomplete_steps:
         download_job.complete = True
         download_job.save()
+        combine(download_job)
 
-    return Response(download_job_to_json(download_job), status=200)
+        return Response(download_job_to_json(download_job), status=200)
+    else:
+        return Response({"error": "Download job is not complete"}, status=200)
 
 
 @api_view(["POST"])
@@ -289,10 +299,11 @@ def retry_download_job(request, job_id):
     if not incomplete_steps:
         download_job.complete = True
         download_job.save()
+        combine(download_job)
+        return Response({"message": "ok"}, status=200)
+    else:
+        return Response({"error": "Download job is not complete"}, status=200)
 
-    combine(download_job)
-
-    return Response({"message": "ok"}, status=200)
 
 
 @api_view(["GET"])

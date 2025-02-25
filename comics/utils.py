@@ -39,6 +39,7 @@ def download_job_to_json(job):
         "total_pages": job.total_pages,
         "total_issues": job.total_issues,
         "complete": job.complete,
+        "name": job.name,
     }
 
 
