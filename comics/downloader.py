@@ -1,6 +1,7 @@
 from typing import List
 from dotenv import load_dotenv
 from comics.models import DownloadJob, DownloadJobStep
+from comics.utils import sanitize_filename
 import threading
 import shutil
 import img2pdf
@@ -64,7 +65,10 @@ def download_image(job: DownloadJob, download_job_step: DownloadJobStep):
         download_job_step.save()
 
     except requests.exceptions.RequestException as e:
-        print(f"Failed to download {link}: {e}")
+        print(f"Failed to download {download_job_step.issue_index_number}, {download_job_step.page_number}, {download_job_step.image_link}")
+        download_job_step.retry = True
+        download_job_step.complete = False
+        download_job_step.save()
 
 
 # Recursively removes a download job's folder and it's contents
@@ -75,8 +79,9 @@ def recursive_remove_folder(job: DownloadJob):
 
 
 def combine(job: DownloadJob):
+    cleaned = sanitize_filename(job.name)
     folder = f"{DOWNLOAD_BASE_FOLDER}\\{job.id}"
-    output_pdf_path = os.path.join(folder, "complete.pdf")
+    output_pdf_path = os.path.join(folder, f"{cleaned}.pdf")
 
     image_paths = []
 

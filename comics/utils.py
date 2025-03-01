@@ -1,5 +1,5 @@
 import re
-
+import os
 
 def comic_to_json(comic):
     return {
@@ -50,6 +50,25 @@ def create_date(date_string):
         return f"{int(match.group(1))}-01-01"
     else:
         raise ValueError("A four digit date was not found in date string")
+
+
+def sanitize_filename(filename: str, replacement: str = "_") -> str:
+
+    invalid_chars = r'[<>:"/\\|?*]'  # Includes backslash (\\) and forward slash (/)
+
+    cleaned_filename = re.sub(invalid_chars, replacement, filename)
+
+    cleaned_filename = cleaned_filename.strip()
+
+    if not cleaned_filename:
+        cleaned_filename = "complete"
+
+    reserved_names = {"CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8",
+                      "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"}
+    if cleaned_filename.upper() in reserved_names:
+        cleaned_filename = f"_{cleaned_filename}"
+
+    return cleaned_filename
 
 
 if __name__ == "__main__":

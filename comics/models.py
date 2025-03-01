@@ -56,3 +56,5 @@ class DownloadJobStep(models.Model):
     # issue_index_number used as issue folder name
     issue_index_number = models.IntegerField()
     complete = models.BooleanField()
+    issue_link = models.URLField(unique=True, null=False, blank=False)
+    retry = models.BooleanField()

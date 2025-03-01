@@ -171,6 +171,24 @@ def delete_comic(request, comic_id):
         return Response({"error": str(e)}, status=500)
 
 
+@api_view(["DELETE"])
+def delete_issue(request, issue_id):
+    try:
+        # Check if the comic exists
+        issue = Issue.objects.get(id=issue_id)
+
+        # Delete the comic
+        issue.delete()
+
+        return Response({"message": "Issue deleted successfully."}, status=200)
+
+    except Comic.DoesNotExist:
+        return Response({"error": "Issue not found."}, status=404)
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
+
 @api_view(["PUT"])
 def update_comic(request, comic_id):
     try:
@@ -240,6 +258,7 @@ def create_and_start_download(request):
     total_pages = 0
 
     for issue_id in issue_ids:
+
         issue = Issue.objects.get(id=issue_id)
 
         pages = Page.objects.filter(issue_id=issue)
@@ -253,6 +272,8 @@ def create_and_start_download(request):
                 page_number=page.page_number,
                 issue_index_number=issue_index,
                 complete=False,
+                issue_link=issue.link,
+                retry=False,
             )
 
             total_pages += 1

@@ -13,6 +13,7 @@ urlpatterns = [
     path("add_comic", views.add_comic),
     path("update_comic/<int:comic_id>", views.update_comic),
     path("delete_comic/<int:comic_id>", views.delete_comic),
+    path("delete_issue/<int:issue_id>", views.delete_issue),
     path("create_and_start_download", views.create_and_start_download),
     path("retry_download_job/<int:job_id>", views.retry_download_job),
     path("get_all_download_jobs", views.get_all_download_jobs),
