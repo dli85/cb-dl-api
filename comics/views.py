@@ -12,6 +12,7 @@ from .downloader import (
 )
 from natsort import natsorted
 
+
 @api_view(["GET"])
 def get_all_comics(request):
     comics = Comic.objects.all()  # Retrieve all comics
@@ -36,9 +37,10 @@ def get_comic(request, comic_id):
     comic = Comic.objects.get(id=comic_id)
     return Response(comic_to_json(comic))
 
+
 @api_view(["GET"])
 def get_comic_by_link(request):
-    url = request.GET.get('url')
+    url = request.GET.get("url")
     comic = get_object_or_404(Comic, link=url)
     return Response(comic_to_json(comic))
 
@@ -53,15 +55,16 @@ def get_issues_for_comic(request, comic_id):
 
     # Prepare the list of issues
     issue_list = [issue_to_json(issue) for issue in issues]
-    issue_list = natsorted(issue_list, key=lambda c: c['title'], reverse=True)
+    issue_list = natsorted(issue_list, key=lambda c: c["title"], reverse=True)
     # issue_list = sorted(issue_list, key=lambda c: c['title'])
 
     # Return the list of issues for the comic
     return Response(issue_list)
 
+
 @api_view(["GET"])
 def get_issues_by_link(request):
-    url = request.GET.get('url')
+    url = request.GET.get("url")
     # Retrieve the comic by its ID
     comic = get_object_or_404(Comic, link=url)
 
@@ -70,7 +73,7 @@ def get_issues_by_link(request):
 
     # Prepare the list of issues
     issue_list = [issue_to_json(issue) for issue in issues]
-    issue_list = natsorted(issue_list, key=lambda c: c['title'], reverse=True)
+    issue_list = natsorted(issue_list, key=lambda c: c["title"], reverse=True)
     # issue_list = sorted(issue_list, key=lambda c: c['title'])
 
     # Return the list of issues for the comic
@@ -151,7 +154,7 @@ def search_comics(request):
     # Prepare the results to return as JSON
     comic_list = [comic_to_json(comic) for comic in comics]
 
-    comic_list = sorted(comic_list, key=lambda c: c['title'])
+    comic_list = sorted(comic_list, key=lambda c: c["title"])
 
     return Response(comic_list)
 
@@ -236,7 +239,7 @@ def update_comic(request, comic_id):
 def create_and_start_download(request):
     data = request.data
     issue_ids = data["issue_ids"]
-    name = data['name']
+    name = data["name"]
 
     steps: List[DownloadJobStep] = []
 
@@ -250,7 +253,7 @@ def create_and_start_download(request):
             total_pages=total_pages,
             total_issues=total_issues,
             complete=complete,
-            name=name
+            name=name,
         )
     except Exception as e:
         # If there was an error with the request, send an error response
@@ -327,7 +330,6 @@ def retry_download_job(request, job_id):
         return Response({"message": "ok"}, status=200)
     else:
         return Response({"error": "Download job is not complete"}, status=200)
-
 
 
 @api_view(["GET"])

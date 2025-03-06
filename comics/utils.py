@@ -1,6 +1,7 @@
 import re
 import os
 
+
 def comic_to_json(comic):
     return {
         "id": comic.id,
@@ -63,8 +64,30 @@ def sanitize_filename(filename: str, replacement: str = "_") -> str:
     if not cleaned_filename:
         cleaned_filename = "complete"
 
-    reserved_names = {"CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8",
-                      "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"}
+    reserved_names = {
+        "CON",
+        "PRN",
+        "AUX",
+        "NUL",
+        "COM1",
+        "COM2",
+        "COM3",
+        "COM4",
+        "COM5",
+        "COM6",
+        "COM7",
+        "COM8",
+        "COM9",
+        "LPT1",
+        "LPT2",
+        "LPT3",
+        "LPT4",
+        "LPT5",
+        "LPT6",
+        "LPT7",
+        "LPT8",
+        "LPT9",
+    }
     if cleaned_filename.upper() in reserved_names:
         cleaned_filename = f"_{cleaned_filename}"
 

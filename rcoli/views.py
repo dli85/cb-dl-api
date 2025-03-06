@@ -74,7 +74,7 @@ def add_comics_and_issues(request):
 @api_view(["PATCH"])
 def add_or_update_comics_and_issues(request):
     data = request.data
-    urls = data['urls']
+    urls = data["urls"]
 
     try:
         comics = run_spider(urls, InfoPageSpider)
@@ -124,10 +124,14 @@ def add_or_update_comics_and_issues(request):
                 pages = 0
 
                 if not issue_title or not issue_link:
-                    return Response({"error": "Issue is missing required fields."}, status=400)
+                    return Response(
+                        {"error": "Issue is missing required fields."}, status=400
+                    )
 
                 # Check if the issue already exists
-                existing_issue = Issue.objects.filter(link=issue_link, comic_id=existing_comic).first()
+                existing_issue = Issue.objects.filter(
+                    link=issue_link, comic_id=existing_comic
+                ).first()
 
                 if existing_issue:
                     existing_issue.title = issue_title
@@ -135,7 +139,10 @@ def add_or_update_comics_and_issues(request):
                     existing_issue.save()
                 else:
                     Issue.objects.create(
-                        title=issue_title, link=issue_link, comic_id=existing_comic, pages=pages
+                        title=issue_title,
+                        link=issue_link,
+                        comic_id=existing_comic,
+                        pages=pages,
                     )
 
             result.append(comic_to_json(existing_comic))

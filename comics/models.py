@@ -44,6 +44,7 @@ class DownloadJob(models.Model):
     complete = models.BooleanField()
     name = models.CharField(max_length=255, null=False, blank=False)
 
+
 class DownloadJobStep(models.Model):
     download_job = models.ForeignKey(
         DownloadJob, on_delete=models.CASCADE, related_name="download_job_steps"

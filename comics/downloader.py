@@ -65,7 +65,9 @@ def download_image(job: DownloadJob, download_job_step: DownloadJobStep):
         download_job_step.save()
 
     except requests.exceptions.RequestException as e:
-        print(f"Failed to download {download_job_step.issue_index_number}, {download_job_step.page_number}, {download_job_step.image_link}")
+        print(
+            f"Failed to download {download_job_step.issue_index_number}, {download_job_step.page_number}, {download_job_step.image_link}"
+        )
         download_job_step.retry = True
         download_job_step.complete = False
         download_job_step.save()
