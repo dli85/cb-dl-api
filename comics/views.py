@@ -10,6 +10,7 @@ from .downloader import (
     recursive_remove_folder,
     combine,
 )
+from natsort import natsorted
 
 @api_view(["GET"])
 def get_all_comics(request):
@@ -52,6 +53,7 @@ def get_issues_for_comic(request, comic_id):
 
     # Prepare the list of issues
     issue_list = [issue_to_json(issue) for issue in issues]
+    issue_list = natsorted(issue_list, key=lambda c: c['title'], reverse=True)
     # issue_list = sorted(issue_list, key=lambda c: c['title'])
 
     # Return the list of issues for the comic
@@ -68,6 +70,7 @@ def get_issues_by_link(request):
 
     # Prepare the list of issues
     issue_list = [issue_to_json(issue) for issue in issues]
+    issue_list = natsorted(issue_list, key=lambda c: c['title'], reverse=True)
     # issue_list = sorted(issue_list, key=lambda c: c['title'])
 
     # Return the list of issues for the comic

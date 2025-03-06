@@ -1,8 +1,12 @@
 django
 psycopg2
 black
-dot-env
+python-dotenv
 scrapy
 requests
 img2pdf
 django-cors-headers
+djangorestframework
+bs4
+selenium
+natsort
