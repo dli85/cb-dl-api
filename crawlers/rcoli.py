@@ -60,6 +60,13 @@ class InfoPageSpider(scrapy.Spider):
                 {"issue_title": issue_title, "issue_link": issue_link}
             )
 
+        result["issues"] = list(
+            filter(
+                lambda x: x["issue_title"] is not None and x["issue_link"] is not None,
+                result["issues"],
+            )
+        )
+
         yield result
 
 

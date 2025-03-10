@@ -53,18 +53,24 @@ def add_comics_and_issues(request):
         print("comic created")
 
         for issue in issues:
-            issue_title = issue["issue_title"]
-            issue_link = os.getenv("RCOLI_BASE_LINK") + issue["issue_link"]
-            pages = 0
+            try:
+                issue_title = issue["issue_title"]
+                issue_link = os.getenv("RCOLI_BASE_LINK") + issue["issue_link"]
+                pages = 0
 
-            if not issue_title or not issue_link:
-                return Response(
-                    {"error": "Issue is missing required fields."}, status=400
+                if not issue_title or not issue_link:
+                    return Response(
+                        {"error": "Issue is missing required fields."}, status=400
+                    )
+
+                Issue.objects.create(
+                    title=issue_title,
+                    link=issue_link,
+                    comic_id=created_comic,
+                    pages=pages,
                 )
-
-            Issue.objects.create(
-                title=issue_title, link=issue_link, comic_id=created_comic, pages=pages
-            )
+            except Exception as e:
+                print(issue.link, issue.title)
 
         result.append(comic_to_json(created_comic))
 

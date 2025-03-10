@@ -195,6 +195,28 @@ def delete_issue(request, issue_id):
         return Response({"error": str(e)}, status=500)
 
 
+@api_view(["DELETE"])
+def delete_issues_by_comic_link(request):
+    try:
+        link = request.GET.get("link", "")
+
+        if not link:
+            return Response({"error": "Missing required parameter: url"}, status=400)
+
+        # Retrieve the comic by its link
+        comic = get_object_or_404(Comic, link=link)
+
+        # Delete all issues related to the comic
+        deleted_count, _ = Issue.objects.filter(comic_id=comic).delete()
+
+        return Response(
+            {"message": f"Deleted {deleted_count} issues for comic {comic.title}."},
+            status=200,
+        )
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
+
 @api_view(["PUT"])
 def update_comic(request, comic_id):
     try:
